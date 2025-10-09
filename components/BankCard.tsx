@@ -42,6 +42,7 @@ const BankCard = ({
             className="ml-5"
           />
         </div>
+
         <Image
           src="/icons/lines.png"
           width={316}
