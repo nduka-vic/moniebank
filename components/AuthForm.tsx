@@ -7,24 +7,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 
 import CustomInput from "./CustomInput";
 import { authFormSchema, parseStringify } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getLoggedInUser, signIn, signUp } from "@/lib/actions/user.actions";
-import { createAdminClient } from "@/lib/appwrite";
-import { ID } from "node-appwrite";
-import { cookies } from "next/headers";
+import { signIn, signUp } from "@/lib/actions/user.actions";
+import PlaidLink from "./PlaidLink";
 
 const AuthForm = ({ type }: { type: string }) => {
   const router = useRouter();
@@ -44,7 +34,7 @@ const AuthForm = ({ type }: { type: string }) => {
 
   // 2. Define a submit handler.
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    // console.log("Form data submitted:", data);
+    console.log("Form data submitted:", JSON.stringify(data));
     setIsLoading(true);
     try {
       //   sign up with Appwrite & create plaid token
@@ -52,8 +42,27 @@ const AuthForm = ({ type }: { type: string }) => {
       if (type === "sign-up") {
         console.log("Entering sign-up branch, about to call signUp function");
 
-        const newUser = await signUp(data);
-        console.log("signUp returned:", newUser);
+        const userData = {
+          firstName: data.firstName!,
+          lastName: data.lastName!,
+          address1: data.address1!,
+          city: data.city!,
+          state: data.state!,
+          postalCode: data.postalCode!,
+          dateOfBirth: data.dateOfBirth!,
+          ssn: data.ssn!,
+          email: data.email,
+          password: data.password,
+        };
+
+        const newUser = await signUp(userData);
+
+        // console.log(userData, JSON.stringify(userData));
+
+        // console.log("signUp returned:", JSON.stringify(newUser));
+        // console.log(newUser);
+
+        // Set returned user dataset in state to be used by other functions in the program.
         setUser(newUser);
       }
 
@@ -106,7 +115,9 @@ const AuthForm = ({ type }: { type: string }) => {
         </div>
       </header>
       {user ? (
-        <div className="flex flex-col gap-4"></div>
+        <div className="flex flex-col gap-4">
+          <PlaidLink user={user} variant="primary" />
+        </div>
       ) : (
         <>
           {" "}
